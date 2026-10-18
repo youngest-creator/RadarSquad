@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="black-red">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RadarSquad — Поиск тиммейтов</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* === 5 ТЕМ ОФОРМЛЕНИЯ === */
+        /* 1. Черно-красный */
+        :root, [data-theme="black-red"] {
+            --bg-main: #070709;
+            --bg-card: #121216;
+            --bg-input: #1a1a20;
+            --text-main: #f5f5f7;
+            --text-muted: #9ca3af;
+            --accent: #ff1e42;
+            --accent-hover: #ff4765;
+            --neon-shadow: 0 0 15px rgba(255, 30, 66, 0.55), 0 0 30px rgba(255, 30, 66, 0.2);
+            --border-color: #2b181d;
+        }
+        /* 2. Серый */
+        [data-theme="grey"] {
+            --bg-main: #26292e;
+            --bg-card: #32363e;
+            --bg-input: #3e434d;
+            --text-main: #f3f4f6;
+            --text-muted: #cbd5e1;
+            --accent: #38bdf8;
+            --accent-hover: #7dd3fc;
+            --neon-shadow: 0 0 15px rgba(56, 189, 248, 0.5), 0 0 25px rgba(56, 189, 248, 0.2);
+            --border-color: #4b5563;
+        }
+        /* 3. Светлый */
+        [data-theme="light"] {
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-input: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --neon-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+            --border-color: #cbd5e1;
+        }
+        /* 4. Темный (Киберпанк фиолетовый) */
+        [data-theme="dark"] {
+            --bg-main: #090b14;
+            --bg-card: #131726;
+            --bg-input: #1d2336;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent: #a855f7;
+            --accent-hover: #c084fc;
+            --neon-shadow: 0 0 15px rgba(168, 85, 247, 0.55), 0 0 30px rgba(168, 85, 247, 0.25);
+            --border-color: #292244;
+        }
+        /* 5. Черно-зеленый */
+        [data-theme="black-green"] {
+            --bg-main: #050a07;
+            --bg-card: #0d1610;
+            --bg-input: #142219;
+            --text-main: #ecfdf5;
+            --text-muted: #86efac;
+            --accent: #00ff66;
+            --accent-hover: #33ff85;
+            --neon-shadow: 0 0 15px rgba(0, 255, 102, 0.55), 0 0 30px rgba(0, 255, 102, 0.2);
+            --border-color: #143621;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease; }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* НАВИГАЦИЯ */
+        .navbar {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+            text-decoration: none;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo span {
+            color: var(--accent);
+            text-shadow: var(--neon-shadow);
+        }
+        .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .nav-link {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+        }
+        .nav-link:hover {
+            border-color: var(--accent);
+            box-shadow: var(--neon-shadow);
+            color: var(--accent);
+        }
+
+        /* ПЕРЕКЛЮЧАТЕЛЬ ТЕМ */
+        .theme-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-input);
+            padding: 6px 12px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+        }
+        .theme-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .theme-dot:hover, .theme-dot.active {
+            transform: scale(1.25);
+            border-color: #fff;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        /* НЕОНОВЫЕ КНОПКИ И ЭЛЕМЕНТЫ */
+        .btn-neon {
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            box-shadow: var(--neon-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+        [data-theme="black-red"] .btn-neon, [data-theme="dark"] .btn-neon, [data-theme="light"] .btn-neon {
+            color: #fff;
+        }
+        .btn-neon:hover {
+            transform: translateY(-2px) scale(1.02);
+            background: var(--accent-hover);
+            box-shadow: 0 0 25px var(--accent);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--accent);
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: var(--neon-shadow);
+        }
+
+        /* КОНТЕЙНЕР И КАРТОЧКИ */
+        .container { max-width: 1280px; width: 100%; margin: 30px auto; padding: 0 20px; flex: 1; }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 22px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .card:hover {
+            border-color: var(--accent);
+            box-shadow: var(--neon-shadow);
+            transform: translateY(-4px);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            margin-top: 6px;
+            margin-bottom: 16px;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: var(--neon-shadow);
+        }
+
+        .alert {
+            padding: 14px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background: var(--bg-card);
+            border-left: 4px solid var(--accent);
+            box-shadow: var(--neon-shadow);
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            background: var(--bg-input);
+            border: 1px solid var(--accent);
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="{% url 'game_select' %}" class="logo">
+            📡 RADAR<span>SQUAD</span>
+        </a>
+
+        <div class="theme-switcher" title="Выбери тему оформления">
+            <span style="font-size: 12px; color: var(--text-muted); margin-right: 4px;">Тема:</span>
+            <div class="theme-dot" data-set-theme="black-red" style="background: linear-gradient(135deg, #000 50%, #ff1e42 50%);" title="1. Черно-красная"></div>
+            <div class="theme-dot" data-set-theme="grey" style="background: linear-gradient(135deg, #26292e 50%, #94a3b8 50%);" title="2. Серая"></div>
+            <div class="theme-dot" data-set-theme="light" style="background: linear-gradient(135deg, #ffffff 50%, #6366f1 50%);" title="3. Светлая"></div>
+            <div class="theme-dot" data-set-theme="dark" style="background: linear-gradient(135deg, #090b14 50%, #a855f7 50%);" title="4. Темная"></div>
+            <div class="theme-dot" data-set-theme="black-green" style="background: linear-gradient(135deg, #000 50%, #00ff66 50%);" title="5. Черно-зеленая"></div>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="nav-links">
+            <a href="{% url 'game_select' %}" class="nav-link">🎮 Выбор игры</a>
+            <a href="{% url 'my_rooms' %}" class="nav-link">💬 Мои комнаты</a>
+            <a href="{% url 'cabinet' %}" class="nav-link">👤 Личный кабинет ({{ user.username }})</a>
+            <a href="{% url 'logout' %}" class="btn-outline" style="padding: 6px 12px; font-size: 13px;">Выйти</a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+            {% for m in messages %}
+                <div class="alert">{{ m }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        // Скрипт мгновенного переключения и сохранения 5 тем
+        const htmlEl = document.documentElement;
+        const dots = document.querySelectorAll('.theme-dot');
+        const savedTheme = localStorage.getItem('radarsquad_theme') || 'black-red';
+
+        function applyTheme(themeName) {
+            htmlEl.setAttribute('data-theme', themeName);
+            localStorage.setItem('radarsquad_theme', themeName);
+            dots.forEach(d => {
+                d.classList.toggle('active', d.getAttribute('data-set-theme') === themeName);
+            });
+        }
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => applyTheme(dot.getAttribute('data-set-theme')));
+        });
+
+        applyTheme(savedTheme);
+    </script>
+</body>
+</html>

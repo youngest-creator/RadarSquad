@@ -1,0 +1,148 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1 style="font-family: 'Orbitron', sans-serif; margin-bottom: 25px;">👤 ЛИЧНЫЙ КАБИНЕТ ИГРОКА</h1>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px;">
+    
+    <!-- ЛЕВАЯ КОЛОНКА: АВАТАРКА И ССЫЛКИ STEAM / DISCORD -->
+    <div class="card" style="height: fit-content;">
+        <h2 style="margin-bottom: 15px; font-size: 20px;">1. Основной профиль и контакты</h2>
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); box-shadow: var(--neon-shadow);">
+            {% else %}
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--bg-input); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold;">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <h3>{{ user.username }}</h3>
+                <p style="font-size: 13px; color: var(--text-muted);">Загрузи аватарку и укажи соцсети</p>
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="profile">
+            
+            <label>Аватарка профиля (картинка)</label>
+            <input type="file" name="avatar" accept="image/*">
+
+            <label>Ссылка на профиль Steam (для CS2, Dota 2, PUBG)</label>
+            <input type="url" name="steam_url" value="{{ profile.steam_url }}" placeholder="https://steamcommunity.com/id/...">
+
+            <label>Твой Discord (никнейм или ссылка)</label>
+            <input type="text" name="discord_tag" value="{{ profile.discord_tag }}" placeholder="Например: radar_king#0001">
+
+            <button type="submit" class="btn-neon" style="width: 100%;">💾 Сохранить профиль</button>
+        </form>
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА: ОФОРМЛЕНИЕ КАРТОЧКИ ИГРОКА ПОД ВЫБРАННУЮ ИГРУ -->
+    <div class="card">
+        <h2 style="margin-bottom: 15px; font-size: 20px;">2. Оформление карточки игрока</h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">
+            Выбери игру — подсказки рейтинга и ролей автоматически подстроятся под неё!
+        </p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="card">
+
+            <label>Выбери игру</label>
+            <select name="game" id="gameSelect" onchange="updateGameFields()">
+                {% for slug, g in games.items %}
+                    <option value="{{ slug }}" 
+                            data-rating-label="{{ g.rating_label }}" 
+                            data-role-ph="{{ g.role_placeholder }}">
+                        {{ g.icon }} {{ g.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label>Твой игровой никнейм</label>
+            <input type="text" name="nickname" id="f_nickname" value="{{ user.username }}" required>
+
+            <label id="ratingLabel">Рейтинг либо очки в выбранной игре</label>
+            <input type="text" name="rating" id="f_rating" placeholder="Например: 15 000 Elo / 4500 MMR / 35000 кубков" required>
+
+            <label>Роль или позиция в игре</label>
+            <input type="text" name="role" id="f_role" placeholder="Снайпер, Керри, Саппорт..." required>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label>Язык общения</label>
+                    <input type="text" name="language" id="f_lang" value="Русский" required>
+                </div>
+                <div>
+                    <label>Часов проведено в игре</label>
+                    <input type="number" name="hours_played" id="f_hours" value="500" min="0" required>
+                </div>
+            </div>
+
+            <label style="display: flex; align-items: center; gap: 10px; margin: 8px 0 18px; cursor: pointer;">
+                <input type="checkbox" name="has_mic" id="f_mic" checked style="width: 20px; height: 20px; margin: 0;">
+                <span>🎙️ У меня есть рабочий микрофон</span>
+            </label>
+
+            <label>Описание профиля (о себе, прайм-тайм, кого ищешь)</label>
+            <textarea name="description" id="f_desc" rows="3" placeholder="Ищу адекватных тиммейтов на вечер для апа рейтинга, не токсик..."></textarea>
+
+            <button type="submit" class="btn-neon" style="width: 100%;">🚀 Опубликовать / Обновить карточку</button>
+        </form>
+    </div>
+</div>
+
+<!-- СПИСОК УЖЕ СОЗДАННЫХ АНКЕТ ИГРОКА -->
+{% if user_cards %}
+<div style="margin-top: 35px;">
+    <h3 style="margin-bottom: 15px;">Мои активные карточки на радаре:</h3>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        {% for slug, c in user_cards.items %}
+            <a href="{% url 'dashboard' slug %}" class="card" style="text-decoration: none; color: inherit; min-width: 240px;">
+                <div style="font-weight: 700; color: var(--accent);">{{ c.get_game_display }}</div>
+                <div style="font-size: 14px; margin-top: 5px;">Ник: <b>{{ c.nickname }}</b></div>
+                <div style="font-size: 13px; color: var(--text-muted);">Рейтинг: {{ c.rating }} | Роль: {{ c.role }}</div>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+    const existingCards = {
+        {% for slug, c in user_cards.items %}
+        "{{ slug }}": {
+            nickname: "{{ c.nickname|escapejs }}",
+            rating: "{{ c.rating|escapejs }}",
+            role: "{{ c.role|escapejs }}",
+            language: "{{ c.language|escapejs }}",
+            hours: "{{ c.hours_played }}",
+            mic: {{ c.has_mic|yesno:"true,false" }},
+            desc: "{{ c.description|escapejs }}"
+        },
+        {% endfor %}
+    };
+
+    function updateGameFields() {
+        const sel = document.getElementById('gameSelect');
+        const opt = sel.options[sel.selectedIndex];
+        const slug = sel.value;
+
+        document.getElementById('ratingLabel').innerText = "Рейтинг / Очки (" + opt.getAttribute('data-rating-label') + ")";
+        document.getElementById('f_role').placeholder = opt.getAttribute('data-role-ph');
+
+        if (existingCards[slug]) {
+            const data = existingCards[slug];
+            document.getElementById('f_nickname').value = data.nickname;
+            document.getElementById('f_rating').value = data.rating;
+            document.getElementById('f_role').value = data.role;
+            document.getElementById('f_lang').value = data.language;
+            document.getElementById('f_hours').value = data.hours;
+            document.getElementById('f_mic').checked = data.mic;
+            document.getElementById('f_desc').value = data.desc;
+        }
+    }
+    updateGameFields();
+</script>
+{% endblock %}

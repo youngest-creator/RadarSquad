@@ -1,0 +1,31 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h1 style="font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">💬 КОМНАТЫ И КОМАНДЫ</h1>
+<p style="color: var(--text-muted); margin-bottom: 25px;">Когда в команде собирается 2 или более человек, здесь появляется ваш общий командный чат</p>
+
+{% if rooms %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
+    {% for room in rooms %}
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <span class="badge" style="margin-bottom: 10px;">{{ room.get_game_display }}</span>
+            <h3 style="font-size: 20px; margin-bottom: 10px;">{{ room.name }}</h3>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 15px;">
+                👥 Участники ({{ room.members.count }}): 
+                {% for m in room.members.all %}
+                    <b style="color: var(--text-main);">{{ m.username }}</b>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+        </div>
+        <a href="{% url 'room_chat' room.id %}" class="btn-neon">Открыть чат команды →</a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 50px 20px;">
+    <h3>У тебя пока нет активных комнат 🤷‍♂️</h3>
+    <p style="color: var(--text-muted); margin: 10px 0 20px;">Перейди на радар любой игры и нажми «Пригласить в команду» под анкетой понравившегося игрока!</p>
+    <a href="{% url 'game_select' %}" class="btn-neon">Выбрать игру</a>
+</div>
+{% endif %}
+{% endblock %}

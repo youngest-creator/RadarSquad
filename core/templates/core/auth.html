@@ -1,0 +1,36 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
+    
+    <!-- ВХОД -->
+    <div class="card">
+        <h2 style="font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">⚡ ВХОД В СИСТЕМУ</h2>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Войди в аккаунт, чтобы найти тиммейтов в RadarSquad</p>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="login">
+            <label>Твой никнейм (Логин)</label>
+            <input type="text" name="username" placeholder="Например: ProSniper" required>
+            <label>Пароль</label>
+            <input type="password" name="password" placeholder="••••••••" required>
+            <button type="submit" class="btn-neon" style="width: 100%; margin-top: 10px;">ВОЙТИ НА РАДАР</button>
+        </form>
+    </div>
+
+    <!-- РЕГИСТРАЦИЯ -->
+    <div class="card">
+        <h2 style="font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">🚀 РЕГИСТРАЦИЯ</h2>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Создай аккаунт за 10 секунд и собери свой идеальный стак</p>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="register">
+            <label>Придумай никнейм</label>
+            <input type="text" name="username" placeholder="Никнейм" required>
+            <label>Придумай пароль</label>
+            <input type="password" name="password" placeholder="Минимум 4 символа" required>
+            <button type="submit" class="btn-outline" style="width: 100%; margin-top: 10px;">СОЗДАТЬ АККАУНТ</button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

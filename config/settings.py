@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-%^2mk6r4&jl=^iht6wnas(j$(c81m4ipy)1^a=c0bq8+2y0)%=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -110,7 +111,11 @@ import os
 TIME_ZONE = 'UTC'
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+    "https://*.pythonanywhere.com",
+]
 USE_I18N = True
 
 USE_TZ = True

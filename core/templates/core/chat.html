@@ -1,30 +1,42 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<div style="display: grid; grid-template-columns: 280px 1fr; gap: 25px;">
+<div style="display: grid; grid-template-columns: 310px 1fr; gap: 25px;">
     
-    <!-- СПИСОК УЧАСТНИКОВ КОМАНДЫ -->
+    <!-- СПИСОК УЧАСТНИКОВ КОМАНДЫ И ИХ РЕПУТАЦИЯ -->
     <div class="card" style="height: fit-content;">
         <span class="badge" style="margin-bottom: 8px;">{{ room.get_game_display }}</span>
-        <h3 style="margin-bottom: 15px;">{{ room.name }}</h3>
-        <h4 style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px;">Состав команды ({{ members.count }}):</h4>
+        <h3 style="margin-bottom: 10px;">{{ room.name }}</h3>
+        <div style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 14px;">
+            Заполнено мест: {{ members.count }} из {{ max_limit }}
+        </div>
         
-        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
             {% for m in members %}
-            <div style="display: flex; align-items: center; gap: 10px; background: var(--bg-input); padding: 8px 12px; border-radius: 8px;">
-                <div style="width: 10px; height: 10px; border-radius: 50%; background: #00ff66; box-shadow: 0 0 8px #00ff66;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 12px; border-radius: 8px;">
                 <div>
-                    <div style="font-weight: 700; font-size: 14px;">{{ m.username }}</div>
+                    <div style="font-weight: 700; font-size: 14px;">{{ m.username }} <span style="font-size:12px; color:var(--accent);">(Реп: {{ m.profile.reputation }})</span></div>
                     {% if m.profile.discord_tag %}
                         <div style="font-size: 11px; color: var(--text-muted);">DS: {{ m.profile.discord_tag }}</div>
                     {% endif %}
                 </div>
+                {% if m != request.user %}
+                <form method="POST" action="{% url 'vote_reputation' m.id %}" style="display: flex; gap: 4px;">
+                    {% csrf_token %}
+                    <button type="submit" name="vote" value="up" class="btn-outline" style="padding: 3px 7px; font-size: 11px;">+Реп</button>
+                    <button type="submit" name="vote" value="down" class="btn-outline" style="padding: 3px 7px; font-size: 11px;">-Реп</button>
+                </form>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
 
-        <a href="{% url 'dashboard' room.game %}" class="btn-outline" style="display: block; text-align: center; font-size: 13px;">
-            + Пригласить ещё игроков
+        {% if members.count < max_limit %}
+        <a href="{% url 'dashboard' room.game %}" class="btn-neon" style="display: block; text-align: center; font-size: 13px;">
+            + Добрать ещё игроков ({{ members.count }}/{{ max_limit }})
         </a>
+        {% else %}
+        <div class="badge" style="width: 100%; text-align: center; padding: 10px;">Полный сквад собран ({{ max_limit }}/{{ max_limit }})</div>
+        {% endif %}
     </div>
 
     <!-- ОКНО ЧАТА -->
@@ -54,13 +66,17 @@
 <script>
     const chatBox = document.getElementById('chatBox');
     chatBox.scrollTop = chatBox.scrollHeight;
+    let lastMsgCount = {{ chat_messages.count }};
 
-    // Автоматическое обновление чата каждые 3 секунды без перезагрузки страницы
     setInterval(() => {
         fetch("{% url 'api_room_messages' room.id %}")
             .then(res => res.json())
             .then(data => {
                 if (!data.messages) return;
+                if (data.messages.length > lastMsgCount) {
+                    if (typeof playRadarSound === 'function') playRadarSound('notify');
+                    lastMsgCount = data.messages.length;
+                }
                 chatBox.innerHTML = data.messages.map(m => `
                     <div style="align-self: ${m.is_me ? 'flex-end' : 'flex-start'}; max-width: 75%;">
                         <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 3px; ${m.is_me ? 'text-align: right;' : ''}">

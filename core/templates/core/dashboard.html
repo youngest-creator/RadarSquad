@@ -1,27 +1,78 @@
 {% extends 'core/base.html' %}
 {% block content %}
 
-<!-- БАННЕР ВЫБРАННОЙ ИГРЫ -->
+<!-- БАННЕР ВЫБРАННОЙ ИГРЫ (БЕЗ СТИКЕРОВ) -->
 <div style="border-radius: 16px; overflow: hidden; position: relative; margin-bottom: 30px; border: 1px solid var(--accent); box-shadow: var(--neon-shadow);">
     <div style="height: 210px; background: url('{{ game.banner }}') center/cover no-repeat; filter: brightness(0.45);"></div>
     <div style="position: absolute; inset: 0; display: flex; justify-content: space-between; align-items: center; padding: 30px; flex-wrap: wrap; gap: 20px;">
         <div>
-            <span class="badge" style="margin-bottom: 10px;">РАДАР ИГРОКОВ АКТИВЕН</span>
+            <span class="badge" style="margin-bottom: 10px;">{{ game.tag }} • МАКСИМУМ В КОМАНДЕ: {{ game.max_players }} ИГРОКОВ</span>
             <h1 style="font-family: 'Orbitron', sans-serif; font-size: 36px; color: #fff; text-shadow: 0 2px 15px #000;">
-                {{ game.icon }} {{ game.name }}
+                {{ game.name }}
             </h1>
             <p style="color: #e2e8f0; margin-top: 6px;">Система рейтинга: <b>{{ game.rating_label }}</b></p>
         </div>
-        <a href="{% url 'cabinet' %}" class="btn-neon">+ Моя анкета для {{ game.name }}</a>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="{{ bot_url }}" target="_blank" class="btn-outline" style="background: rgba(0,0,0,0.6); color: #fff;">Telegram-бот уведомлений</a>
+            <a href="{% url 'cabinet' %}" class="btn-neon">+ Моя анкета для {{ game.name }}</a>
+        </div>
     </div>
 </div>
 
-<!-- ФИЛЬТР ПОИСКА -->
+<!-- ДОСКА ОБЪЯВЛЕНИЙ О НАБОРЕ В КОМАНДУ (ИЩУ 2-3 ИГРОКОВ) -->
+<div class="card" style="margin-bottom: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 18px;">
+        <div>
+            <h2 style="font-family: 'Orbitron', sans-serif; font-size: 20px;">ОБЪЯВЛЕНИЯ О СБОРЕ КОМАНДЫ (МАКС. {{ game.max_players }} ЧЕЛ.)</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">Опубликуй быстрый призыв в команду или нажми «Вступить в команду», чтобы сразу зайти в лобби-чат</p>
+        </div>
+    </div>
+
+    <!-- Форма создания объявления -->
+    <form method="POST" action="{% url 'create_party_post' game.slug %}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: center; background: var(--bg-input); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        {% csrf_token %}
+        <input type="text" name="title" placeholder="Объявление (напр.: Ищу 2-3 игроков в команду на вечер)" required style="margin: 0;">
+        <input type="text" name="needed_roles" placeholder="Кто нужен (напр.: Снайпер + Саппорт, с микро)" style="margin: 0;">
+        <button type="submit" class="btn-neon" style="padding: 12px 18px;">+ Опубликовать объявление</button>
+    </form>
+
+    <!-- Список активных объявлений -->
+    {% if party_posts %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+        {% for post in party_posts %}
+        <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 13px; color: var(--text-muted);">Лидер: <b style="color: var(--text-main);">{{ post.author.username }}</b> (Карма: {{ post.author.profile.reputation }})</span>
+                    <span class="badge">В группе: {{ post.room.members.count }} / {{ game.max_players }}</span>
+                </div>
+                <h4 style="font-size: 16px; margin-bottom: 6px; color: var(--accent);">{{ post.title }}</h4>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">Требования: {{ post.needed_roles }}</p>
+            </div>
+
+            {% if post.room.members.count < game.max_players or request.user in post.room.members.all %}
+                <a href="{% url 'join_party_room' post.room.id %}" class="btn-neon" style="width: 100%; font-size: 13px; padding: 9px;">
+                    {% if request.user in post.room.members.all %}Открыть чат команды →{% else %}Вступить в команду ({{ post.room.members.count }}/{{ game.max_players }}){% endif %}
+                </a>
+            {% else %}
+                <span class="btn-outline" style="width: 100%; text-align: center; opacity: 0.5; cursor: not-allowed; font-size: 13px;">
+                    Команда укомплектована ({{ game.max_players }}/{{ game.max_players }})
+                </span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <p style="font-size: 14px; color: var(--text-muted);">Активных объявлений пока нет — создай первое выше!</p>
+    {% endif %}
+</div>
+
+<!-- ФИЛЬТР ПОИСКА АНКЕТ -->
 <form method="GET" class="card" style="margin-bottom: 25px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; padding: 16px 22px;">
-    <input type="text" name="q" value="{{ search_q }}" placeholder="Поиск по роли (например: Снайпер), рейтингу или нику..." style="flex: 1; min-width: 240px; margin: 0;">
+    <input type="text" name="q" value="{{ search_q }}" placeholder="Поиск по роли, рейтингу или нику..." style="flex: 1; min-width: 240px; margin: 0;">
     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
         <input type="checkbox" name="mic" value="1" {% if mic_only == '1' %}checked{% endif %} style="width: 18px; height: 18px; margin: 0;">
-        🎙️ Только с микрофоном
+        Только с микрофоном
     </label>
     <button type="submit" class="btn-neon" style="padding: 10px 22px;">Найти тиммейтов</button>
     {% if search_q or mic_only %}
@@ -35,67 +86,74 @@
     {% for card in cards %}
     <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
         <div>
-            <!-- Шапка карточки: Аватарка + Ник + Часы -->
-            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
-                {% if card.user.profile.avatar %}
-                    <img src="{{ card.user.profile.avatar.url }}" alt="avatar" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); box-shadow: var(--neon-shadow);">
-                {% else %}
-                    <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--bg-input); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
-                        {{ card.nickname|slice:":1"|upper }}
+            <!-- Шапка карточки: Аватарка + Ник + Репутация -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    {% if card.user.profile.avatar %}
+                        <img src="{{ card.user.profile.avatar.url }}" alt="avatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); box-shadow: var(--neon-shadow);">
+                    {% else %}
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--bg-input); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold;">
+                            {{ card.nickname|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h3 style="font-size: 19px;">{{ card.nickname }}</h3>
+                        <span style="font-size: 12px; color: var(--text-muted);">{{ card.hours_played }} ч. • {{ card.language }} • {% if card.has_mic %}С микро{% else %}Без микро{% endif %}</span>
                     </div>
-                {% endif %}
-                <div>
-                    <h3 style="font-size: 20px; display: flex; align-items: center; gap: 8px;">
-                        {{ card.nickname }}
-                        {% if card.has_mic %}
-                            <span title="Есть микрофон" style="font-size: 15px;">🎙️</span>
-                        {% else %}
-                            <span title="Без микрофона" style="font-size: 15px; opacity: 0.5;">🔇</span>
-                        {% endif %}
-                    </h3>
-                    <span style="font-size: 13px; color: var(--text-muted);">⏱️ {{ card.hours_played }} ч. в игре • 🗣️ {{ card.language }}</span>
+                </div>
+
+                <!-- Блок Репутации (Кармы) -->
+                <div style="text-align: right;">
+                    <span class="badge" style="border-color: {% if card.user.profile.reputation >= 0 %}var(--accent){% else %}#ef4444{% endif %};">
+                        Реп: {{ card.user.profile.reputation }}
+                    </span>
+                    {% if card.user != request.user %}
+                    <form method="POST" action="{% url 'vote_reputation' card.user.id %}" style="display: flex; gap: 4px; margin-top: 5px; justify-content: flex-end;">
+                        {% csrf_token %}
+                        <button type="submit" name="vote" value="up" class="btn-outline" style="padding: 2px 7px; font-size: 11px;" title="Повысить репутацию">+Реп</button>
+                        <button type="submit" name="vote" value="down" class="btn-outline" style="padding: 2px 7px; font-size: 11px;" title="Понизить репутацию">-Реп</button>
+                    </form>
+                    {% endif %}
                 </div>
             </div>
 
             <!-- Рейтинг и роль -->
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
-                <span class="badge">🏆 {{ card.rating }}</span>
-                <span class="badge">🎯 Роль: {{ card.role }}</span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                <span class="badge">{{ card.rating }}</span>
+                <span class="badge">Роль: {{ card.role }}</span>
             </div>
 
             <!-- Описание профиля -->
             <p style="font-size: 14px; color: var(--text-muted); background: var(--bg-input); padding: 12px; border-radius: 8px; min-height: 60px; margin-bottom: 14px;">
-                {{ card.description|default:"Игрок пока не добавил описание, но готов разваливать кабины в пати!" }}
+                {{ card.description|default:"Игрок готов к командной игре." }}
             </p>
 
             <!-- Контакты Steam / Discord -->
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; font-size: 13px;">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; font-size: 13px;">
                 {% if game.is_steam and card.user.profile.steam_url %}
-                    <a href="{{ card.user.profile.steam_url }}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">🔗 Профиль Steam</a>
+                    <a href="{{ card.user.profile.steam_url }}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 600;">Профиль Steam</a>
                 {% endif %}
                 {% if card.user.profile.discord_tag %}
-                    <span style="color: var(--text-main);">👾 Discord: <b>{{ card.user.profile.discord_tag }}</b></span>
+                    <span style="color: var(--text-main);">Discord: <b>{{ card.user.profile.discord_tag }}</b></span>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Кнопка Пригласить в команду -->
+        <!-- Кнопка Пригласить в команду (до лимита игры) -->
         {% if card.user != request.user %}
         <form method="POST" action="{% url 'invite_player' card.user.id game.slug %}" style="border-top: 1px solid var(--border-color); padding-top: 14px;">
             {% csrf_token %}
-            {% if my_rooms %}
             <select name="room_id" style="margin-bottom: 10px; padding: 8px; font-size: 13px;">
-                <option value="">✨ Создать новую комнату (Сквад)</option>
+                <option value="">Автоподбор / Создать новый сквад (до {{ game.max_players }} чел.)</option>
                 {% for r in my_rooms %}
-                    <option value="{{ r.id }}">➕ Добавить в: {{ r.name }} ({{ r.members.count }} чел.)</option>
+                    <option value="{{ r.id }}">Добавить в: {{ r.name }} ({{ r.members.count }}/{{ game.max_players }} чел.)</option>
                 {% endfor %}
             </select>
-            {% endif %}
-            <button type="submit" class="btn-neon" style="width: 100%;">⚡ Пригласить в команду</button>
+            <button type="submit" class="btn-neon" style="width: 100%;">Пригласить в команду</button>
         </form>
         {% else %}
         <div style="border-top: 1px solid var(--border-color); padding-top: 14px; text-align: center;">
-            <a href="{% url 'cabinet' %}" class="btn-outline" style="display: block; width: 100%;">✏️ Это твоя карточка (Изменить)</a>
+            <a href="{% url 'cabinet' %}" class="btn-outline" style="display: block; width: 100%;">Это твоя карточка (Изменить)</a>
         </div>
         {% endif %}
     </div>
@@ -103,8 +161,8 @@
 </div>
 {% else %}
 <div class="card" style="text-align: center; padding: 50px 20px;">
-    <h2 style="margin-bottom: 10px;">На радаре {{ game.name }} пока пусто 📡</h2>
-    <p style="color: var(--text-muted); margin-bottom: 20px;">Стань первым игроком в этой дисциплине! Заполни карточку в личном кабинете.</p>
+    <h2 style="margin-bottom: 10px;">На радаре {{ game.name }} пока нет карточек</h2>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Стань первым игроком в этой дисциплине!</p>
     <a href="{% url 'cabinet' %}" class="btn-neon">Создать карточку игрока</a>
 </div>
 {% endif %}

@@ -1,0 +1,110 @@
+{% extends 'core/base.html' %}
+{% block content %}
+
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+    <div>
+        <span class="badge" style="margin-bottom: 6px;">РЕЖИМ СУПЕРПОЛЬЗОВАТЕЛЯ</span>
+        <h1 style="font-family: 'Orbitron', sans-serif;">🛡️ ПАНЕЛЬ АДМИНИСТРАТОРА RADARSQUAD</h1>
+    </div>
+    <a href="/admin/" target="_blank" class="btn-neon">⚙️ Открыть полную БД Django (/admin)</a>
+</div>
+
+<!-- КАРТОЧКИ ОБЩЕЙ СТАТИСТИКИ -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 13px; color: var(--text-muted);">Всего пользователей</div>
+        <div style="font-family: 'Orbitron', sans-serif; font-size: 36px; color: var(--accent); margin-top: 8px;">{{ stats.total_users }}</div>
+    </div>
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 13px; color: var(--text-muted);">Анкет в играх</div>
+        <div style="font-family: 'Orbitron', sans-serif; font-size: 36px; color: var(--accent); margin-top: 8px;">{{ stats.total_cards }}</div>
+    </div>
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 13px; color: var(--text-muted);">Создано комнат (Сквадов)</div>
+        <div style="font-family: 'Orbitron', sans-serif; font-size: 36px; color: var(--accent); margin-top: 8px;">{{ stats.total_rooms }}</div>
+    </div>
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 13px; color: var(--text-muted);">Сообщений в чатах</div>
+        <div style="font-family: 'Orbitron', sans-serif; font-size: 36px; color: var(--accent); margin-top: 8px;">{{ stats.total_messages }}</div>
+    </div>
+</div>
+
+<!-- СТАТИСТИКА ПО ИГРАМ -->
+<div class="card" style="margin-bottom: 30px;">
+    <h3 style="margin-bottom: 15px;">📊 Количество анкет по дисциплинам:</h3>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        {% for game_name, count in stats.by_game.items %}
+        <div style="background: var(--bg-input); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--border-color); flex: 1; min-width: 170px;">
+            <div style="font-size: 13px; color: var(--text-muted);">{{ game_name }}</div>
+            <div style="font-size: 22px; font-weight: 800; color: var(--text-main); margin-top: 4px;">{{ count }} игроков</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 25px;">
+
+    <!-- УПРАВЛЕНИЕ КАРТОЧКАМИ ИГРОКОВ -->
+    <div class="card">
+        <h3 style="margin-bottom: 15px;">🎮 Последние карточки игроков</h3>
+        <div style="max-height: 420px; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 10px;">
+            {% for c in recent_cards %}
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 8px;">
+                <div>
+                    <b>{{ c.nickname }}</b> <span class="badge" style="margin-left: 6px;">{{ c.get_game_display }}</span>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">{{ c.rating }} • {{ c.role }}</div>
+                </div>
+                <form method="POST" action="{% url 'admin_action' 'card' c.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Удалить ✖</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- УПРАВЛЕНИЕ КОМНАТАМИ И СООБЩЕНИЯМИ -->
+    <div style="display: flex; flex-direction: column; gap: 25px;">
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">💬 Активные комнаты команд</h3>
+            <div style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                {% for r in recent_rooms %}
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 8px;">
+                    <div>
+                        <a href="{% url 'room_chat' r.id %}" style="color: var(--accent); font-weight: 700; text-decoration: none;">{{ r.name }}</a>
+                        <div style="font-size: 12px; color: var(--text-muted);">Создатель: {{ r.creator.username }} • Участников: {{ r.members.count }}</div>
+                    </div>
+                    <form method="POST" action="{% url 'admin_action' 'room' r.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Удалить ✖</button>
+                    </form>
+                </div>
+                {% empty %}
+                <p style="color: var(--text-muted); font-size: 14px;">Комнат пока не создано.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">📨 Модерация последних сообщений в чатах</h3>
+            <div style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                {% for m in recent_messages %}
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 10px 14px; border-radius: 8px;">
+                    <div style="max-width: 75%;">
+                        <div style="font-size: 12px; color: var(--text-muted);"><b>{{ m.sender.username }}</b> в «{{ m.room.name }}»:</div>
+                        <div style="font-size: 13px; margin-top: 2px;">{{ m.text }}</div>
+                    </div>
+                    <form method="POST" action="{% url 'admin_action' 'message' m.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-outline" style="padding: 5px 10px; font-size: 12px;">Удалить ✖</button>
+                    </form>
+                </div>
+                {% empty %}
+                <p style="color: var(--text-muted); font-size: 14px;">Сообщений пока нет.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

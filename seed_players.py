@@ -744,5 +744,48 @@ def run_seed():
     )
 
 
+def seed_posts_and_reputation():
+    import random
+    from core.models import PartyPost, PlayerCard, SquadRoom, UserProfile
+    from core.views import GAMES_INFO
+
+    # Раздаем стартовую репутацию всем профилям
+    for profile in UserProfile.objects.all():
+        if profile.reputation == 0:
+            profile.reputation = random.randint(3, 35)
+            profile.save()
+
+    # Создаем по 3 объявления о наборе в команду для каждой игры
+    for slug, info in GAMES_INFO.items():
+        cards = PlayerCard.objects.filter(game=slug)[:3]
+        for c in cards:
+            title = (
+                f"Ищу +{info['max_players'] - 1} игроков в команду"
+                f" ({info['name']}) на вечер"
+            )
+            if not PartyPost.objects.filter(
+                author=c.user, game=slug, title=title
+            ).exists():
+                room = SquadRoom.objects.create(
+                    name=f"Сквад {c.nickname} ({info['name']})",
+                    game=slug,
+                    creator=c.user,
+                    max_players=info["max_players"],
+                )
+                room.members.add(c.user)
+                PartyPost.objects.create(
+                    author=c.user,
+                    game=slug,
+                    room=room,
+                    title=title,
+                    needed_roles=f"Нужны: {c.role} / Адекватность и микрофон",
+                )
+    print(
+        "✅ Стартовая репутация и объявления о наборе в команду успешно созданы!"
+    )
+
+
 if __name__ == "__main__":
+    run_seed()
+    seed_posts_and_reputation()
     run_seed()

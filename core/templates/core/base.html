@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* === 5 ТЕМ ОФОРМЛЕНИЯ === */
-        /* 1. Черно-красный */
         :root, [data-theme="black-red"] {
             --bg-main: #070709;
             --bg-card: #121216;
@@ -19,7 +18,6 @@
             --neon-shadow: 0 0 15px rgba(255, 30, 66, 0.55), 0 0 30px rgba(255, 30, 66, 0.2);
             --border-color: #2b181d;
         }
-        /* 2. Серый */
         [data-theme="grey"] {
             --bg-main: #26292e;
             --bg-card: #32363e;
@@ -31,7 +29,6 @@
             --neon-shadow: 0 0 15px rgba(56, 189, 248, 0.5), 0 0 25px rgba(56, 189, 248, 0.2);
             --border-color: #4b5563;
         }
-        /* 3. Светлый */
         [data-theme="light"] {
             --bg-main: #f1f5f9;
             --bg-card: #ffffff;
@@ -43,7 +40,6 @@
             --neon-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
             --border-color: #cbd5e1;
         }
-        /* 4. Темный (Киберпанк фиолетовый) */
         [data-theme="dark"] {
             --bg-main: #090b14;
             --bg-card: #131726;
@@ -55,7 +51,6 @@
             --neon-shadow: 0 0 15px rgba(168, 85, 247, 0.55), 0 0 30px rgba(168, 85, 247, 0.25);
             --border-color: #292244;
         }
-        /* 5. Черно-зеленый */
         [data-theme="black-green"] {
             --bg-main: #050a07;
             --bg-card: #0d1610;
@@ -78,7 +73,6 @@
             flex-direction: column;
         }
 
-        /* НАВИГАЦИЯ */
         .navbar {
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
@@ -100,22 +94,22 @@
             color: var(--text-main);
             text-decoration: none;
             letter-spacing: 1.5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         .logo span {
             color: var(--accent);
             text-shadow: var(--neon-shadow);
         }
-        .nav-links { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .nav-links { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .nav-link {
             color: var(--text-main);
             text-decoration: none;
             font-weight: 600;
+            font-size: 14px;
             padding: 8px 14px;
             border-radius: 8px;
             border: 1px solid transparent;
+            cursor: pointer;
+            background: transparent;
         }
         .nav-link:hover {
             border-color: var(--accent);
@@ -123,31 +117,6 @@
             color: var(--accent);
         }
 
-        /* ПЕРЕКЛЮЧАТЕЛЬ ТЕМ */
-        .theme-switcher {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg-input);
-            padding: 6px 12px;
-            border-radius: 30px;
-            border: 1px solid var(--border-color);
-        }
-        .theme-dot {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .theme-dot:hover, .theme-dot.active {
-            transform: scale(1.25);
-            border-color: #fff;
-            box-shadow: 0 0 10px currentColor;
-        }
-
-        /* НЕОНОВЫЕ КНОПКИ И ЭЛЕМЕНТЫ */
         .btn-neon {
             background: var(--accent);
             color: #000;
@@ -174,12 +143,13 @@
             background: transparent;
             color: var(--text-main);
             border: 1px solid var(--accent);
-            padding: 9px 18px;
+            padding: 8px 16px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s;
+            display: inline-block;
         }
         .btn-outline:hover {
             background: var(--accent);
@@ -187,7 +157,6 @@
             box-shadow: var(--neon-shadow);
         }
 
-        /* КОНТЕЙНЕР И КАРТОЧКИ */
         .container { max-width: 1280px; width: 100%; margin: 30px auto; padding: 0 20px; flex: 1; }
         .card {
             background: var(--bg-card);
@@ -199,7 +168,7 @@
         .card:hover {
             border-color: var(--accent);
             box-shadow: var(--neon-shadow);
-            transform: translateY(-4px);
+            transform: translateY(-3px);
         }
 
         input, select, textarea {
@@ -237,33 +206,148 @@
             border: 1px solid var(--accent);
             color: var(--text-main);
         }
+
+        /* МОДАЛЬНОЕ ОКНО НАСТРОЕК */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            padding: 20px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-box {
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            box-shadow: var(--neon-shadow);
+            border-radius: 16px;
+            max-width: 520px;
+            width: 100%;
+            padding: 28px;
+            position: relative;
+        }
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin: 10px 0 20px;
+        }
+        .theme-choice {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-main);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .theme-choice.active, .theme-choice:hover {
+            border-color: var(--accent);
+            box-shadow: var(--neon-shadow);
+        }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
         <a href="{% url 'game_select' %}" class="logo">
-            📡 RADAR<span>SQUAD</span>
+            RADAR<span>SQUAD</span>
         </a>
 
-        <div class="theme-switcher" title="Выбери тему оформления">
-            <span style="font-size: 12px; color: var(--text-muted); margin-right: 4px;">Тема:</span>
-            <div class="theme-dot" data-set-theme="black-red" style="background: linear-gradient(135deg, #000 50%, #ff1e42 50%);" title="1. Черно-красная"></div>
-            <div class="theme-dot" data-set-theme="grey" style="background: linear-gradient(135deg, #26292e 50%, #94a3b8 50%);" title="2. Серая"></div>
-            <div class="theme-dot" data-set-theme="light" style="background: linear-gradient(135deg, #ffffff 50%, #6366f1 50%);" title="3. Светлая"></div>
-            <div class="theme-dot" data-set-theme="dark" style="background: linear-gradient(135deg, #090b14 50%, #a855f7 50%);" title="4. Темная"></div>
-            <div class="theme-dot" data-set-theme="black-green" style="background: linear-gradient(135deg, #000 50%, #00ff66 50%);" title="5. Черно-зеленая"></div>
-        </div>
-
-        {% if user.is_authenticated %}
         <div class="nav-links">
-            <a href="{% url 'game_select' %}" class="nav-link">🎮 Выбор игры</a>
-            <a href="{% url 'my_rooms' %}" class="nav-link">💬 Мои комнаты</a>
-            <a href="{% url 'cabinet' %}" class="nav-link">👤 Личный кабинет ({{ user.username }})</a>
-            <a href="{% url 'logout' %}" class="btn-outline" style="padding: 6px 12px; font-size: 13px;">Выйти</a>
+            {% if user.is_authenticated %}
+                {% if user.is_staff or user.is_superuser %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn-neon" style="padding: 7px 14px; font-size: 13px;" data-i18n="nav_admin">Админ-панель</a>
+                {% endif %}
+                <a href="{% url 'game_select' %}" class="nav-link" data-i18n="nav_games">Дисциплины</a>
+                <a href="{% url 'my_rooms' %}" class="nav-link" data-i18n="nav_rooms">Мои комнаты</a>
+                <a href="{% url 'cabinet' %}" class="nav-link"><span data-i18n="nav_cabinet">Личный кабинет</span> ({{ user.username }})</a>
+            {% endif %}
+
+            <a href="{{ bot_url|default:'https://t.me/RadarSquadNotifyBot' }}" target="_blank" class="btn-outline" style="padding: 7px 14px; font-size: 13px;">
+                Telegram Бот
+            </a>
+
+            <button type="button" class="nav-link" onclick="toggleSettingsModal()" style="border-color: var(--border-color);" data-i18n="nav_settings">
+                Настройки
+            </button>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" class="btn-outline" style="padding: 7px 14px; font-size: 13px;" data-i18n="nav_logout">Выйти</a>
+            {% endif %}
         </div>
-        {% endif %}
     </nav>
+
+    <!-- ПЛАШКА / МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
+    <div class="modal-backdrop" id="settingsModal">
+        <div class="modal-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                <h2 style="font-family: 'Orbitron', sans-serif; font-size: 20px;" data-i18n="settings_title">НАСТРОЙКИ ПРИЛОЖЕНИЯ</h2>
+                <button type="button" onclick="toggleSettingsModal()" class="btn-outline" style="padding: 4px 10px;">✕</button>
+            </div>
+
+            <!-- 1. ВЫБОР ТЕМЫ ОФОРМЛЕНИЯ -->
+            <label style="font-size: 13px; color: var(--text-muted); font-weight: 600;" data-i18n="settings_theme">1. Тема оформления (5 вариантов):</label>
+            <div class="theme-grid">
+                <div class="theme-choice" data-set-theme="black-red">
+                    <span style="width:14px;height:14px;border-radius:50%;background:#ff1e42;display:inline-block;"></span> Черно-красная
+                </div>
+                <div class="theme-choice" data-set-theme="grey">
+                    <span style="width:14px;height:14px;border-radius:50%;background:#38bdf8;display:inline-block;"></span> Серая
+                </div>
+                <div class="theme-choice" data-set-theme="light">
+                    <span style="width:14px;height:14px;border-radius:50%;background:#6366f1;display:inline-block;"></span> Светлая
+                </div>
+                <div class="theme-choice" data-set-theme="dark">
+                    <span style="width:14px;height:14px;border-radius:50%;background:#a855f7;display:inline-block;"></span> Темная
+                </div>
+                <div class="theme-choice" data-set-theme="black-green">
+                    <span style="width:14px;height:14px;border-radius:50%;background:#00ff66;display:inline-block;"></span> Черно-зеленая
+                </div>
+            </div>
+
+            <!-- 2. ЯЗЫК ИНТЕРФЕЙСА -->
+            <label style="font-size: 13px; color: var(--text-muted); font-weight: 600;" data-i18n="settings_lang">2. Язык интерфейса (Interface Language):</label>
+            <select id="langSwitcher" onchange="changeLanguage(this.value)" style="margin-bottom: 18px;">
+                <option value="ru">Русский (RU)</option>
+                <option value="en">English (EN)</option>
+            </select>
+
+            <!-- 3. ИНТЕРАКТИВНЫЕ ЗВУКИ -->
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 12px 15px; border-radius: 10px; margin-bottom: 18px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;" data-i18n="settings_sound">Интерактивные звуки уведомлений</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Звуковой отклик кнопок и новых сообщений в чате</div>
+                </div>
+                <input type="checkbox" id="soundToggle" onchange="toggleSoundSetting(this.checked)" style="width: 22px; height: 22px; margin: 0; cursor: pointer;">
+            </div>
+
+            <!-- 4. ПРИВЯЗКА TELEGRAM БОТА -->
+            {% if user.is_authenticated %}
+            <form method="POST" action="{% url 'save_user_settings' %}" style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                {% csrf_token %}
+                <label style="font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 4px;">
+                    Telegram Chat ID для мгновенных уведомлений:
+                </label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" name="telegram_chat_id" value="{{ user.profile.telegram_chat_id }}" placeholder="Твой ID из @RadarSquadNotifyBot" style="margin: 0; flex: 1;">
+                    <button type="submit" class="btn-neon" style="padding: 11px 16px;">Сохранить</button>
+                </div>
+                <div style="margin-top: 10px; font-size: 12px;">
+                    Перейди в нашего бота: <a href="{{ bot_url|default:'https://t.me/RadarSquadNotifyBot' }}" target="_blank" style="color: var(--accent); font-weight: 700;">@RadarSquadNotifyBot</a>, нажми /start и скопируй свой ID.
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
 
     <div class="container">
         {% if messages %}
@@ -276,24 +360,124 @@
     </div>
 
     <script>
-        // Скрипт мгновенного переключения и сохранения 5 тем
+        /* === 1. ИНТЕРАКТИВНЫЕ ЗВУКИ (Web Audio API) === */
+        let soundEnabled = (localStorage.getItem('radarsquad_sound') ?? 'true') === 'true';
+        const soundCheckbox = document.getElementById('soundToggle');
+        if (soundCheckbox) soundCheckbox.checked = soundEnabled;
+
+        function playRadarSound(type = 'click') {
+            if (!soundEnabled) return;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.07);
+                    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.07);
+                } else if (type === 'notify') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
+                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.28);
+                }
+            } catch (e) {}
+        }
+
+        function toggleSoundSetting(val) {
+            soundEnabled = val;
+            localStorage.setItem('radarsquad_sound', val ? 'true' : 'false');
+            if (val) playRadarSound('notify');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-neon, .btn-outline, .theme-choice')) {
+                playRadarSound('click');
+            }
+        });
+
+        /* === 2. МОДАЛЬНОЕ ОКНО НАСТРОЕК И 5 ТЕМ === */
         const htmlEl = document.documentElement;
-        const dots = document.querySelectorAll('.theme-dot');
+        const themeChoices = document.querySelectorAll('.theme-choice');
         const savedTheme = localStorage.getItem('radarsquad_theme') || 'black-red';
+
+        function toggleSettingsModal() {
+            document.getElementById('settingsModal').classList.toggle('open');
+            playRadarSound('click');
+        }
 
         function applyTheme(themeName) {
             htmlEl.setAttribute('data-theme', themeName);
             localStorage.setItem('radarsquad_theme', themeName);
-            dots.forEach(d => {
-                d.classList.toggle('active', d.getAttribute('data-set-theme') === themeName);
+            themeChoices.forEach(c => {
+                c.classList.toggle('active', c.getAttribute('data-set-theme') === themeName);
             });
         }
 
-        dots.forEach(dot => {
-            dot.addEventListener('click', () => applyTheme(dot.getAttribute('data-set-theme')));
+        themeChoices.forEach(choice => {
+            choice.addEventListener('click', () => applyTheme(choice.getAttribute('data-set-theme')));
         });
-
         applyTheme(savedTheme);
+
+        /* === 3. СМЕНА ЯЗЫКА ИНТЕРФЕЙСА (RU / EN) === */
+        const translations = {
+            ru: {
+                nav_admin: "Админ-панель",
+                nav_games: "Дисциплины",
+                nav_rooms: "Мои комнаты",
+                nav_cabinet: "Личный кабинет",
+                nav_settings: "Настройки",
+                nav_logout: "Выйти",
+                settings_title: "НАСТРОЙКИ ПРИЛОЖЕНИЯ",
+                settings_theme: "1. Тема оформления (5 вариантов):",
+                settings_lang: "2. Язык интерфейса:",
+                settings_sound: "Интерактивные звуки уведомлений",
+                games_heading: "ВЫБЕРИ СВОЮ ДИСЦИПЛИНУ",
+                games_sub: "Переходи на радар нужной игры, смотри объявления о сборе пати и анкеты игроков"
+            },
+            en: {
+                nav_admin: "Admin Panel",
+                nav_games: "Games",
+                nav_rooms: "My Squads",
+                nav_cabinet: "Profile",
+                nav_settings: "Settings",
+                nav_logout: "Logout",
+                settings_title: "APPLICATION SETTINGS",
+                settings_theme: "1. Visual Theme (5 styles):",
+                settings_lang: "2. Interface Language:",
+                settings_sound: "Interactive Sound Notifications",
+                games_heading: "SELECT YOUR DISCIPLINE",
+                games_sub: "Open the game radar, browse party announcements and player cards"
+            }
+        };
+
+        function changeLanguage(lang) {
+            localStorage.setItem('radarsquad_lang', lang);
+            const dict = translations[lang] || translations.ru;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.innerText = dict[key];
+            });
+            const sel = document.getElementById('langSwitcher');
+            if (sel) sel.value = lang;
+        }
+
+        const savedLang = localStorage.getItem('radarsquad_lang') || 'ru';
+        changeLanguage(savedLang);
+
+        {% if messages %}
+            window.addEventListener('DOMContentLoaded', () => playRadarSound('notify'));
+        {% endif %}
     </script>
 </body>
 </html>

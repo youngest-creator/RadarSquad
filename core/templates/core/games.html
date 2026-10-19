@@ -1,8 +1,8 @@
 {% extends 'core/base.html' %}
 {% block content %}
 <div style="text-align: center; margin-bottom: 35px;">
-    <h1 style="font-family: 'Orbitron', sans-serif; font-size: 32px; margin-bottom: 10px;">ВЫБЕРИ СВОЮ ДИСЦИПЛИНУ</h1>
-    <p style="color: var(--text-muted);">Переходи на радар нужной игры, смотри карточки игроков и собирай сквад</p>
+    <h1 style="font-family: 'Orbitron', sans-serif; font-size: 32px; margin-bottom: 10px;" data-i18n="games_heading">ВЫБЕРИ СВОЮ ДИСЦИПЛИНУ</h1>
+    <p style="color: var(--text-muted);" data-i18n="games_sub">Переходи на радар нужной игры, смотри объявления о сборе пати и анкеты игроков</p>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 25px;">
@@ -11,7 +11,8 @@
         <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: 260px; position: relative;">
             <div style="height: 165px; background: url('{{ g.banner }}') center/cover no-repeat; position: relative;">
                 <div style="position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-card), transparent);"></div>
-                <span style="position: absolute; top: 15px; right: 15px; font-size: 28px; background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 10px;">{{ g.icon }}</span>
+                <span class="badge" style="position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.8);">{{ g.tag }}</span>
+                <span class="badge" style="position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.8);">Команда: до {{ g.max_players }} чел.</span>
             </div>
             <div style="padding: 15px 22px; display: flex; justify-content: space-between; align-items: center; flex: 1;">
                 <div>

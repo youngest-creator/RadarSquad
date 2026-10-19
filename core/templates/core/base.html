@@ -372,4 +372,154 @@
 
                 if (type === 'click') {
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(520, ctx.
+                    osc.frequency.setValueAtTime(520, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.07);
+                    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.07);
+                } else if (type === 'notify') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.28);
+                }
+            } catch (e) {}
+        }
+
+        function toggleSoundSetting(val) {
+            soundEnabled = val;
+            localStorage.setItem('radarsquad_sound', val ? 'true' : 'false');
+            if (val) playRadarSound('notify');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-neon, .btn-outline, .theme-choice')) {
+                playRadarSound('click');
+            }
+        });
+
+        const htmlEl = document.documentElement;
+        const themeChoices = document.querySelectorAll('.theme-choice');
+        const savedTheme = localStorage.getItem('radarsquad_theme') || 'black-red';
+
+        // Функция открытия/закрытия модального окна настроек
+        function toggleSettingsModal() {
+            document.getElementById('settingsModal').classList.toggle('open');
+            playRadarSound('click');
+        }
+
+        function applyTheme(themeName) {
+            htmlEl.setAttribute('data-theme', themeName);
+            localStorage.setItem('radarsquad_theme', themeName);
+            themeChoices.forEach(c => {
+                c.classList.toggle('active', c.getAttribute('data-set-theme') === themeName);
+            });
+        }
+
+        themeChoices.forEach(choice => {
+            choice.addEventListener('click', () => applyTheme(choice.getAttribute('data-set-theme')));
+        });
+        applyTheme(savedTheme);
+
+        /* === ГЛОБАЛЬНЫЙ ПЕРЕВОД ПРИЛОЖЕНИЯ === */
+        const translations = {
+            ru: {
+                nav_admin: "Админ-панель",
+                nav_games: "Дисциплины",
+                nav_rooms: "Мои комнаты",
+                nav_cabinet: "Личный кабинет",
+                nav_settings: "Настройки",
+                nav_logout: "Выйти",
+                settings_title: "НАСТРОЙКИ ПРИЛОЖЕНИЯ",
+                settings_theme: "1. Тема оформления (5 вариантов):",
+                settings_lang: "2. Язык интерфейса:",
+                settings_sound: "Интерактивные звуки уведомлений",
+                games_heading: "ВЫБЕРИ СВОЮ ДИСЦИПЛИНУ",
+                games_sub: "Переходи на радар нужной игры, смотри объявления о сборе пати и анкеты игроков",
+                cabinet_heading: "ЛИЧНЫЙ КАБИНЕТ ИГРОКА",
+                profile_title: "1. Основной профиль и контакты",
+                avatar_label: "Аватарка профиля (картинка)",
+                steam_label: "Ссылка на профиль Steam (для CS2, Dota 2, PUBG)",
+                discord_label: "Твой Discord (никнейм или ссылка)",
+                save_profile_btn: "Сохранить профиль",
+                card_title: "2. Оформление карточки игрока",
+                card_sub: "Выбери игру — подсказки рейтинга и ролей автоматически подстроятся под неё!",
+                select_game_label: "Выбери игру",
+                nick_label: "Твой игровой никнейм",
+                role_label: "Роль или позиция в игре",
+                lang_label: "Язык общения",
+                hours_label: "Часов проведено в игре",
+                mic_label: "У меня есть рабочий микрофон",
+                desc_label: "Описание профиля (о себе, прайм-тайм, кого ищешь)",
+                publish_card_btn: "Опубликовать / Обновить карточку",
+                my_cards_title: "Мои активные карточки на радаре:",
+                rooms_heading: "КОМНАТЫ И КОМАНДЫ",
+                rooms_sub: "Когда в команде собирается 2 или более человек, здесь появляется ваш общий командный чат",
+                no_rooms: "У тебя пока нет активных комнат",
+                no_rooms_desc: "Перейди на радар любой игры и нажми «Пригласить в команду» под анкетой понравившегося игрока!",
+                select_game_btn: "Выбрать игру"
+            },
+            en: {
+                nav_admin: "Admin Panel",
+                nav_games: "Games",
+                nav_rooms: "My Squads",
+                nav_cabinet: "Profile",
+                nav_settings: "Settings",
+                nav_logout: "Logout",
+                settings_title: "APPLICATION SETTINGS",
+                settings_theme: "1. Visual Theme (5 styles):",
+                settings_lang: "2. Interface Language:",
+                settings_sound: "Interactive Sound Notifications",
+                games_heading: "SELECT YOUR DISCIPLINE",
+                games_sub: "Open the game radar, browse party announcements and player cards",
+                cabinet_heading: "PLAYER CABINET",
+                profile_title: "1. Main Profile & Contacts",
+                avatar_label: "Profile Avatar (Image)",
+                steam_label: "Steam Profile Link (for CS2, Dota 2, PUBG)",
+                discord_label: "Your Discord tag or link",
+                save_profile_btn: "Save Profile",
+                card_title: "2. Player Card Customization",
+                card_sub: "Select a game — rating and role hints will adjust automatically!",
+                select_game_label: "Select Game",
+                nick_label: "Your In-game Nickname",
+                role_label: "Role or Position",
+                lang_label: "Communication Language",
+                hours_label: "Hours Played",
+                mic_label: "I have a working microphone",
+                desc_label: "Profile Description (about yourself, prime time, goals)",
+                publish_card_btn: "Publish / Update Card",
+                my_cards_title: "My Active Cards on Radar:",
+                rooms_heading: "SQUADS & ROOMS",
+                rooms_sub: "When 2 or more players gather in a team, your shared team chat appears here",
+                no_rooms: "You don't have active rooms yet",
+                no_rooms_desc: "Go to any game radar and click 'Invite to squad' under a player's card!",
+                select_game_btn: "Select Game"
+            }
+        };
+
+        function changeLanguage(lang) {
+            localStorage.setItem('radarsquad_lang', lang);
+            const dict = translations[lang] || translations.ru;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.innerText = dict[key];
+            });
+            const sel = document.getElementById('langSwitcher');
+            if (sel) sel.value = lang;
+        }
+
+        const savedLang = localStorage.getItem('radarsquad_lang') || 'ru';
+        window.addEventListener('DOMContentLoaded', () => {
+            changeLanguage(savedLang);
+        });
+
+        {% if messages %}
+            window.addEventListener('DOMContentLoaded', () => playRadarSound('notify'));
+        {% endif %}
+    </script>
+</body>
+</html>

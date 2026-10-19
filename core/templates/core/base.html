@@ -286,7 +286,7 @@
         </div>
     </nav>
 
-    <!-- ПЛАШКА / МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
+    <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
     <div class="modal-backdrop" id="settingsModal">
         <div class="modal-box">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
@@ -315,7 +315,7 @@
             </div>
 
             <!-- 2. ЯЗЫК ИНТЕРФЕЙСА -->
-            <label style="font-size: 13px; color: var(--text-muted); font-weight: 600;" data-i18n="settings_lang">2. Язык интерфейса (Interface Language):</label>
+            <label style="font-size: 13px; color: var(--text-muted); font-weight: 600;" data-i18n="settings_lang">2. Язык интерфейса:</label>
             <select id="langSwitcher" onchange="changeLanguage(this.value)" style="margin-bottom: 18px;">
                 <option value="ru">Русский (RU)</option>
                 <option value="en">English (EN)</option>
@@ -338,11 +338,8 @@
                     Telegram Chat ID для мгновенных уведомлений:
                 </label>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" name="telegram_chat_id" value="{{ user.profile.telegram_chat_id }}" placeholder="Твой ID из @RadarSquadNotifyBot" style="margin: 0; flex: 1;">
+                    <input type="text" name="telegram_chat_id" value="{{ user.profile.telegram_chat_id }}" placeholder="Твой ID из бота" style="margin: 0; flex: 1;">
                     <button type="submit" class="btn-neon" style="padding: 11px 16px;">Сохранить</button>
-                </div>
-                <div style="margin-top: 10px; font-size: 12px;">
-                    Перейди в нашего бота: <a href="{{ bot_url|default:'https://t.me/RadarSquadNotifyBot' }}" target="_blank" style="color: var(--accent); font-weight: 700;">@RadarSquadNotifyBot</a>, нажми /start и скопируй свой ID.
                 </div>
             </form>
             {% endif %}
@@ -360,7 +357,6 @@
     </div>
 
     <script>
-        /* === 1. ИНТЕРАКТИВНЫЕ ЗВУКИ (Web Audio API) === */
         let soundEnabled = (localStorage.getItem('radarsquad_sound') ?? 'true') === 'true';
         const soundCheckbox = document.getElementById('soundToggle');
         if (soundCheckbox) soundCheckbox.checked = soundEnabled;
@@ -376,108 +372,4 @@
 
                 if (type === 'click') {
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(520, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.07);
-                    gain.gain.setValueAtTime(0.06, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.07);
-                } else if (type === 'notify') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-                    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
-                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.28);
-                }
-            } catch (e) {}
-        }
-
-        function toggleSoundSetting(val) {
-            soundEnabled = val;
-            localStorage.setItem('radarsquad_sound', val ? 'true' : 'false');
-            if (val) playRadarSound('notify');
-        }
-
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.btn-neon, .btn-outline, .theme-choice')) {
-                playRadarSound('click');
-            }
-        });
-
-        /* === 2. МОДАЛЬНОЕ ОКНО НАСТРОЕК И 5 ТЕМ === */
-        const htmlEl = document.documentElement;
-        const themeChoices = document.querySelectorAll('.theme-choice');
-        const savedTheme = localStorage.getItem('radarsquad_theme') || 'black-red';
-
-        function toggleSettingsModal() {
-            document.getElementById('settingsModal').classList.toggle('open');
-            playRadarSound('click');
-        }
-
-        function applyTheme(themeName) {
-            htmlEl.setAttribute('data-theme', themeName);
-            localStorage.setItem('radarsquad_theme', themeName);
-            themeChoices.forEach(c => {
-                c.classList.toggle('active', c.getAttribute('data-set-theme') === themeName);
-            });
-        }
-
-        themeChoices.forEach(choice => {
-            choice.addEventListener('click', () => applyTheme(choice.getAttribute('data-set-theme')));
-        });
-        applyTheme(savedTheme);
-
-        /* === 3. СМЕНА ЯЗЫКА ИНТЕРФЕЙСА (RU / EN) === */
-        const translations = {
-            ru: {
-                nav_admin: "Админ-панель",
-                nav_games: "Дисциплины",
-                nav_rooms: "Мои комнаты",
-                nav_cabinet: "Личный кабинет",
-                nav_settings: "Настройки",
-                nav_logout: "Выйти",
-                settings_title: "НАСТРОЙКИ ПРИЛОЖЕНИЯ",
-                settings_theme: "1. Тема оформления (5 вариантов):",
-                settings_lang: "2. Язык интерфейса:",
-                settings_sound: "Интерактивные звуки уведомлений",
-                games_heading: "ВЫБЕРИ СВОЮ ДИСЦИПЛИНУ",
-                games_sub: "Переходи на радар нужной игры, смотри объявления о сборе пати и анкеты игроков"
-            },
-            en: {
-                nav_admin: "Admin Panel",
-                nav_games: "Games",
-                nav_rooms: "My Squads",
-                nav_cabinet: "Profile",
-                nav_settings: "Settings",
-                nav_logout: "Logout",
-                settings_title: "APPLICATION SETTINGS",
-                settings_theme: "1. Visual Theme (5 styles):",
-                settings_lang: "2. Interface Language:",
-                settings_sound: "Interactive Sound Notifications",
-                games_heading: "SELECT YOUR DISCIPLINE",
-                games_sub: "Open the game radar, browse party announcements and player cards"
-            }
-        };
-
-        function changeLanguage(lang) {
-            localStorage.setItem('radarsquad_lang', lang);
-            const dict = translations[lang] || translations.ru;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (dict[key]) el.innerText = dict[key];
-            });
-            const sel = document.getElementById('langSwitcher');
-            if (sel) sel.value = lang;
-        }
-
-        const savedLang = localStorage.getItem('radarsquad_lang') || 'ru';
-        changeLanguage(savedLang);
-
-        {% if messages %}
-            window.addEventListener('DOMContentLoaded', () => playRadarSound('notify'));
-        {% endif %}
-    </script>
-</body>
-</html>
+                    osc.frequency.setValueAtTime(520, ctx.
